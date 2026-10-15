@@ -63,7 +63,23 @@
 </div>
 
 
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyBPdzepXoNsfZuwvheHrhA6LynGJBctk_E",
+    authDomain: "britton-life-store.firebaseapp.com",
+    projectId: "britton-life-store",
+    storageBucket: "britton-life-store.firebasestorage.app",
+    messagingSenderId: "258780754601",
+    appId: "1:258780754601:web:5c0d162547e64bd99d2fb8",
+    measurementId: "G-RXK7K2Z4YT"
+  });
+  window.db = firebase.firestore();
+</script>
 <script src="app.js"></script>
+
 
 </body>
 </html>
