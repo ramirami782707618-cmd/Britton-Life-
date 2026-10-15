@@ -65,7 +65,7 @@ $("#checkout").onclick = async () => {
       `${item.name} × ${item.quantity} — ${fmt(item.subtotal)}`
     ).join("\n");
 
-    const phone = "966500000000";
+    const phone = "966556575822";
 
     const message =
       "مرحباً BRITTON LIFE، أريد إتمام الطلب:\n" +
