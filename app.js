@@ -22,5 +22,70 @@ function removeItem(id){cart=cart.filter(c=>c.id!==id);save()}
 $$("[data-cat]").forEach(b=>b.addEventListener("click",()=>{cat=b.dataset.cat;render();$("#products").scrollIntoView({behavior:"smooth"})}));
 $("#search").addEventListener("input",e=>{term=e.target.value;render()});$("#range").addEventListener("input",e=>{$("#max").textContent="إلى "+(+e.target.value).toLocaleString("en-US")+" ر.س";render()});$$('#filtercats input').forEach(x=>x.addEventListener("change",render));
 $("#all").onclick=()=>{cat="الكل";term="";$("#search").value="";$$('#filtercats input').forEach(x=>x.checked=false);$("#range").value=2000;render()};
-$("#checkout").onclick=()=>{if(!cart.length)return toast("أضف منتجات إلى السلة أولاً");let detail=cart.map(c=>{let p=products.find(p=>p[0]===c.id);return `${p[1]} × ${c.qty} — ${fmt(p[3]*c.qty)}`}).join("\n"),sum=cart.reduce((s,c)=>s+products.find(p=>p[0]===c.id)[3]*c.qty,0);let phone="966500000000";window.open("https://wa.me/"+phone+"?text="+encodeURIComponent("مرحباً BRITTON LIFE، أريد إتمام الطلب:\n"+detail+"\nالإجمالي: "+fmt(sum)+"\nالاسم:\nالمدينة والعنوان:"),"_blank")};
-$("#news").onsubmit=e=>{e.preventDefault();toast("شكراً لاشتراكك — اربط النموذج بخدمة بريدية لحفظ العناوين");e.target.reset()};render();drawCart();
+
+$("#checkout").onclick = async () => {
+  if (!cart.length) {
+    return toast("أضف منتجات إلى السلة أولاً");
+  }
+
+  const button = $("#checkout");
+  button.disabled = true;
+
+  try {
+    const items = cart.map(c => {
+      const p = products.find(p => p[0] === c.id);
+      return {
+        productId: c.id,
+        name: p[1],
+        price: p[3],
+        quantity: c.qty,
+        subtotal: p[3] * c.qty
+      };
+    });
+
+    const total = items.reduce((sum, item) =>
+      sum + item.subtotal, 0
+    );
+
+    if (!window.db) {
+      throw new Error("Firebase غير متصل");
+    }
+
+    const order = {
+      items,
+      total,
+      currency: "SAR",
+      status: "pending",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    const result = await window.db.collection("orders").add(order);
+
+    const detail = items.map(item =>
+      `${item.name} × ${item.quantity} — ${fmt(item.subtotal)}`
+    ).join("\n");
+
+    const phone = "966500000000";
+
+    const message =
+      "مرحباً BRITTON LIFE، أريد إتمام الطلب:\n" +
+      "رقم الطلب: " + result.id + "\n" +
+      detail + "\n" +
+      "الإجمالي: " + fmt(total) +
+      "\nالاسم:\nالمدينة والعنوان:";
+
+    window.open(
+      "https://wa.me/" + phone + "?text=" +
+      encodeURIComponent(message),
+      "_blank"
+    );
+
+    toast("تم تسجيل الطلب بنجاح");
+  } catch (error) {
+    console.error(error);
+    toast("تعذر تسجيل الطلب. حاول لاحقاً");
+  } finally {
+    button.disabled = false;
+  }
+};
+$("#news").onsubmit=e=>{e.preventDefault();toast("شكراً لاشتراكك — اربط النموذج بخدمة بريدية لحفظ العناوين");e.target.reset()};render();drawCart()
